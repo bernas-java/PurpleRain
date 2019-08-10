@@ -1,0 +1,87 @@
+package main;
+
+import javax.swing.*;
+import java.awt.*;
+import java.util.ArrayList;
+
+public class AppPanel extends JPanel implements Runnable {
+
+    public static final int WIDTH = 800, HEIGHT = 600;
+
+    Thread t;
+    boolean running;
+
+    private int ticks = 0;
+
+    ArrayList<Drop> rain;
+
+    AppPanel() {
+
+        setPreferredSize(new Dimension(WIDTH,HEIGHT));
+
+        rain = new ArrayList<>();
+        create();
+
+        start();
+
+    }
+
+    void start() {
+        running = true;
+        t = new Thread(this);
+        try {
+            t.start();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    void stop() {
+        running = false;
+        try {
+            t.join();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    void tick() {
+        for (Drop d : rain) {
+            d.tick();
+        }
+        ticks = 0;
+        ticks++;
+    }
+
+    private void create() {
+        for (int i = 0; i < 150; i++) {
+            rain.add(new Drop());
+        }
+    }
+
+    public void paint(Graphics g) {
+        g.clearRect(0,0,WIDTH,HEIGHT);
+
+        //  background
+        g.setColor(new Color(230,230,250));
+        g.fillRect(0,0,WIDTH,HEIGHT);
+
+        // Drops
+        for (Drop d : rain) {
+            d.paint(g);
+        }
+    }
+
+    @Override
+    public void run() {
+        while (running) {
+            tick();
+            repaint();
+            try {
+                Thread.sleep(1000/60);
+            } catch (InterruptedException e) {
+            }
+            repaint();
+        }
+    }
+}
